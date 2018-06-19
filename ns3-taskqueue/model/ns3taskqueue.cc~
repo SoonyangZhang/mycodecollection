@@ -27,7 +27,7 @@ void Ns3TaskQueue::Process()
 	        std::unique_ptr<QueuedTask> task=std::move(m_pending.front());//move ownership
 	        m_pending.pop_front();
 	        task->Run();
-	        //task.release();// this will cause memory leakgy
+	        //task.release();
 	    }
 	    uint64_t time_ms=Simulator::Now().GetMilliSeconds();
 	    for(auto it=m_delayTasks.begin();it!=m_delayTasks.end();)
