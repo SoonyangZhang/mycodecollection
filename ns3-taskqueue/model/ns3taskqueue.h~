@@ -105,7 +105,7 @@ public:
                 Closure,
                 std::unique_ptr<QueuedTask>>::value>::type* = nullptr>
   void PostDelayedTask(Closure&& closure, uint32_t time_ms) {
-    PostDelayedTask(NewClosure(std::forward<Closure>(closure)), time_ms);
+    PostDelayedTask(NewClosure(std::forward<Closure>(closure)), milliseconds);
   }
 void PostDelayedTask(std::unique_ptr<QueuedTask> task, uint32_t time_ms);
 void PostTask(std::unique_ptr<QueuedTask>task);
