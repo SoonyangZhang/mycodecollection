@@ -111,7 +111,7 @@ void PostTask(std::unique_ptr<QueuedTask>task);
 private:
     static void ThreadMain(void* context);
 	std::map<uint64_t,std::unique_ptr<QueuedTask>> m_delayTasks;
-	std::list<std::unique_ptr<QueuedTask>>m_pending;
+	//std::list<std::unique_ptr<QueuedTask>>m_pending;
 	bool m_running{false};
 	PlatformThread  thread_;
 	rtc::CriticalSection pending_lock_;

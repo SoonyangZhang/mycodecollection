@@ -26,35 +26,38 @@ void Ns3TaskQueue::Stop()
 }
 void Ns3TaskQueue::Process()
 {
-
+   //well that seems better,make the lock part as small as possible
 	while(m_running)
 	{
-        rtc::CritScope lock(&pending_lock_);
-	    while(!m_pending.empty())
+        uint64_t time_ms=TimeMillis();
+        std::list<std::unique_ptr<QueuedTask>> pending_tasks;
+        {
+            rtc::CritScope lock(&pending_lock_);
+	        for(auto it=m_delayTasks.begin();it!=m_delayTasks.end();)
+	        {
+	    	    if(it->first<=time_ms)
+	    	    {
+	    		    pending_tasks.push_back(std::move(it->second));
+	    		    m_delayTasks.erase(it++);
+	    	    }else{
+	    		    break;
+	    	    }
+	        }
+	    }
+	    while(!pending_tasks.empty())
 	    {
-	        std::unique_ptr<QueuedTask> task=std::move(m_pending.front());//move ownership
-	        m_pending.pop_front();
+	        std::unique_ptr<QueuedTask> task=std::move(pending_tasks.front());//move ownership
+	        pending_tasks.pop_front();
 	        task->Run();
 	        //task.release();// this will cause memory leakgy
-	    }
-	    uint64_t time_ms=TimeMillis();
-	    for(auto it=m_delayTasks.begin();it!=m_delayTasks.end();)
-	    {
-	    	if(it->first<=time_ms)
-	    	{
-	    		std::unique_ptr<QueuedTask> task=std::move(it->second);
-	    		task->Run();
-	    		m_delayTasks.erase(it++);
-	    	}else{
-	    		break;
-	    	}
-	    }
-	}
+	    }            
+    }
+	    
 }
 void Ns3TaskQueue::PostTask(std::unique_ptr<QueuedTask>task)
 {
-    rtc::CritScope lock(&pending_lock_);
-	m_pending.push_back(std::move(task));
+    uint64_t delta=0;
+	PostDelayedTask(std::move(task),0);
 }
 void Ns3TaskQueue::PostDelayedTask(std::unique_ptr<QueuedTask> task, uint32_t time_ms)
 {
