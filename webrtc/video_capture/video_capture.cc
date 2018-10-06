@@ -5,6 +5,7 @@
  *      Author: zsy
  *      email 865678017@qq.com
  *      This file is modified from video_capture_unittest.cc
+ * https://cs.chromium.org/chromium/src/third_party/webrtc/
  */
 
 #include "api/video/i420_buffer.h"
