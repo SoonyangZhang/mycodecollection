@@ -1,13 +1,17 @@
 #ifndef NS3_TASK_QUEUE_H
 #define NS3_TASK_QUEUE_H
 #include <memory>
-#include <map>
+//#include <map>
 #include <list>
 #include <utility>
 #include<stdint.h>
 #include <stddef.h>
 #include "platform_thread.h"
+#include "lock.h"
+#include "atomiclock.h"
 #include "criticalsection.h"
+#include "minheap.h"
+#include<vector>
 template< class T, class M >
 static inline constexpr ptrdiff_t offset_of( const M T::*member ) {
     return reinterpret_cast< ptrdiff_t >( &( reinterpret_cast< T* >( 0 )->*member ) );
@@ -83,11 +87,25 @@ static std::unique_ptr<QueuedTask> NewClosure(Closure&& closure,
   return std::make_unique<ClosureTaskWithCleanup<Closure, Cleanup>>(
       std::forward<Closure>(closure), std::forward<Cleanup>(cleanup));
 }
+//std::map<key ,value> not tolerate diffent value have same key.
+// but  std::priorty  seems having a cope operation of std::unique_ptr
+struct TaskEvent{
+TaskEvent(uint32_t d,std::unique_ptr<QueuedTask>t);
+~TaskEvent();
+int operator >(TaskEvent &b);
+uint32_t delay;
+std::unique_ptr<QueuedTask> task;
+int min_heap_idx;
+};
+class TaskEventCpm{
+public:
+	int operator()(const TaskEvent &a,const TaskEvent &b);
+};
 class Ns3TaskQueue
 {
 public:
 	Ns3TaskQueue();
-	~Ns3TaskQueue(){}
+	~Ns3TaskQueue();
 	bool IsCurrent() const;
 	void Start();
 	void Stop();
@@ -109,12 +127,14 @@ public:
 void PostDelayedTask(std::unique_ptr<QueuedTask> task, uint32_t time_ms);
 void PostTask(std::unique_ptr<QueuedTask>task);
 private:
+	void Clear();
     static void ThreadMain(void* context);
-	std::map<uint64_t,std::unique_ptr<QueuedTask>> m_delayTasks;
-	//std::list<std::unique_ptr<QueuedTask>>m_pending;
+	//std::map<uint64_t,std::unique_ptr<QueuedTask>> m_delayTasks; //will cause error when keys are same,
+	//std::priority_queue<TaskEvent,std::vector<TaskEvent>,TaskEventCpm> m_delayTasks;
 	bool m_running{false};
 	PlatformThread  thread_;
 	rtc::CriticalSection pending_lock_;
+	min_heap<TaskEvent> s_heap_;
 };
 }
 #endif
