@@ -24,7 +24,7 @@
 #include <list>
 #include <utility>
 #include <iostream>
-#include "assert.h"
+#include "ns3-assert.h"
 #include "fatal-error.h"
 
 #ifdef HAVE_STDLIB_H
