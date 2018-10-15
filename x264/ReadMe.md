@@ -14,3 +14,6 @@ ffplay -stats -f h264 ds2.h264
 ./configure --enable-shared --enable-libx264 --enable-gpl  
 
 nm -D /usr/local/lib/libx264.so | grep x264_encoder_open  
+
+gcc psnr.c  -o psnr  -lm  
+./psnr 640 480 420 videoraw.yuv file.yuv ssim > ref_ssim.txt  
