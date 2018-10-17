@@ -13,6 +13,9 @@ ffplay -f rawvideo -video_size  640x480  decode.yuv
 ffplay -stats -f h264 ds2.h264  
 ./configure --enable-shared --enable-libx264 --enable-gpl  
 
+decode h264  with ffmpeg  
+ffmpeg -i out.h264 file.yuv  
+
 nm -D /usr/local/lib/libx264.so | grep x264_encoder_open  
 
 gcc psnr.c  -o psnr  -lm  
